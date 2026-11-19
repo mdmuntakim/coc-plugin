@@ -1,0 +1,34 @@
+{
+  "state": "inWar",
+  "preparationStartTime": "20240301T120000.000Z",
+  "startTime": "20240302T120000.000Z",
+  "endTime": "20240303T120000.000Z",
+  "teamSize": 15,
+  "attacksPerMember": 2,
+  "clan": {
+    "tag": "#2YQ8L0PR",
+    "name": "Iron Vanguard",
+    "badgeUrls": {"small": "https://api-assets.clashofclans.com/badges/70/x.png"},
+    "clanLevel": 19,
+    "stars": 21,
+    "destructionPercentage": 78.4,
+    "attacks": 14,
+    "members": [
+      {"tag": "#2PP", "name": "Test Chief", "townhallLevel": 16, "mapPosition": 1,
+       "opponentAttacks": 1, "attacks": [{"defenderTag": "#8YY", "stars": 3}]}
+    ]
+  },
+  "opponent": {
+    "tag": "#8YY",
+    "name": "Nightfall Legion",
+    "clanLevel": 17,
+    "stars": 16,
+    "destructionPercentage": 61.2,
+    "attacks": 12,
+    "members": []
+  },
+  "attacks": [
+    {"attackerTag": "#2PP", "defenderTag": "#8YY", "stars": 3,
+     "destructionPercentage": 100, "order": 4, "duration": 174}
+  ]
+}

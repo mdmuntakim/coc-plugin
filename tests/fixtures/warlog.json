@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "result": "win",
+      "endTime": "20240220T120000.000Z",
+      "teamSize": 15,
+      "attacksPerMember": 2,
+      "clan": {"tag": "#2YQ8L0PR", "name": "Iron Vanguard", "clanLevel": 19,
+               "stars": 38, "destructionPercentage": 96.2},
+      "opponent": {"tag": "#9QQ", "name": "Stone Wolves", "clanLevel": 18,
+                   "stars": 31, "destructionPercentage": 84.1}
+    },
+    {
+      "result": "lose",
+      "endTime": "20240218T120000.000Z",
+      "teamSize": 15,
+      "attacksPerMember": 2,
+      "clan": {"tag": "#2YQ8L0PR", "name": "Iron Vanguard", "clanLevel": 19,
+               "stars": 29, "destructionPercentage": 75.0},
+      "opponent": {"tag": "#7LL", "name": "Red Tide", "clanLevel": 20,
+                   "stars": 33, "destructionPercentage": 88.7}
+    },
+    {
+      "result": "draw",
+      "endTime": "20240216T120000.000Z",
+      "teamSize": 10,
+      "attacksPerMember": 2,
+      "clan": {"tag": "#2YQ8L0PR", "name": "Iron Vanguard", "clanLevel": 19,
+               "stars": 25, "destructionPercentage": 80.0},
+      "opponent": {"tag": "#6KK", "name": "Grey Company", "clanLevel": 19,
+                   "stars": 25, "destructionPercentage": 80.0}
+    }
+  ],
+  "paging": {"cursors": {"after": "abc", "before": "def"}}
+}

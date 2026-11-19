@@ -76,7 +76,6 @@ public final class ToolsPanel {
         rp.topMargin = Skin.dp(a, 8);
         card.body.addView(result, rp);
 
-        final long[] computed = new long[2];
         LinearLayout actions = Widgets.row(a);
         LinearLayout.LayoutParams ap = Widgets.wide();
         ap.topMargin = Skin.dp(a, 8);
@@ -87,32 +86,12 @@ public final class ToolsPanel {
             int n = Math.max(0, Math.min(200, Chrome.parseInt(attacks.getText().toString(), 4)));
             long g = Loot.fromRaids(Chrome.parseLong(gold.getText().toString(), 0), pct, n);
             long e = Loot.fromRaids(Chrome.parseLong(elixir.getText().toString(), 0), pct, n);
-            computed[0] = g;
-            computed[1] = e;
             result.setTextColor(Palette.TEXT);
             result.setText(n + " raids at " + pct + "%: " + Fmt.shortNumber(g) + " gold  ·  "
                     + Fmt.shortNumber(e) + " elixir  ·  " + Fmt.shortNumber(g + e) + " total");
         });
-        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        cp.rightMargin = Skin.dp(a, 4);
-        calc.setLayoutParams(cp);
+        calc.setLayoutParams(Widgets.wide());
         actions.addView(calc);
-
-        TextView bank = Widgets.pillButton(a, "Bank in profile", false, () -> {
-            if (computed[0] <= 0 && computed[1] <= 0) {
-                Chrome.toast(a, "Calculate the run first");
-                return;
-            }
-            st.addResources(computed[0], computed[1], 0);
-            Chrome.toast(a, "Loot added to the local resources");
-            refresh.run();
-        });
-        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        bp.leftMargin = Skin.dp(a, 4);
-        bank.setLayoutParams(bp);
-        actions.addView(bank);
         card.add(actions);
 
         card.add(Widgets.divider(a));
@@ -139,7 +118,7 @@ public final class ToolsPanel {
         }
         long seconds = Catalog.secondsToMax(levels);
 
-        card.add(Widgets.line(a, "Town Hall", String.valueOf(st.th()), Palette.accent));
+        card.add(Widgets.line(a, "Town Hall", String.valueOf(st.townHall()), Palette.accent));
         card.add(Widgets.line(a, "Upgrade steps left", String.valueOf(steps), Palette.TEXT));
         card.add(Widgets.line(a, "Gold-only cost", Fmt.shortNumber(gold) + " gold", Palette.accent));
         card.add(Widgets.line(a, "Builder time", Fmt.durationSeconds(seconds), Palette.TEXT));
@@ -147,8 +126,8 @@ public final class ToolsPanel {
                 Fmt.durationSeconds(Loot.parallelSeconds(seconds, Store.BUILDERS)), Palette.GREEN));
         card.add(Widgets.line(a, "Builders free",
                 st.buildersFree() + " / " + Store.BUILDERS, Palette.GREEN));
-        card.add(Widgets.line(a, "Laboratory", st.labActive() ? "Researching" : "Idle",
-                st.labActive() ? Palette.ELIXIR : Palette.GREEN));
+        card.add(Widgets.line(a, "Upgrades known",
+                String.valueOf(st.maxedBuildings()) + " maxed", Palette.TEXT));
 
         long target = 5_000_000L;
         long perRaid = Loot.fromAttack(800_000, 70);
@@ -159,9 +138,9 @@ public final class ToolsPanel {
 
     private static View note(Activity a) {
         TextView t = Widgets.body(a,
-                "Planner numbers are estimates built from the catalogue in the app, not from a "
-                        + "Supercell data feed. They are meant for comparing upgrades, not for "
-                        + "predicting the exact in-game price.");
+                "Planner numbers are estimates built from the catalogue in the app. The live "
+                        + "figures on Account, Army and War come from the official API; this tab "
+                        + "does arithmetic, it does not claim to predict an exact in-game price.");
         t.setTextSize(10.5f);
         t.setTextColor(0x88A6B1BE);
         return t;

@@ -1,0 +1,25 @@
+{
+  "tag": "#2YQ8L0PR",
+  "name": "Iron Vanguard",
+  "description": "War clan, English, active donors. Example document for the parser tests.",
+  "warFrequency": "always",
+  "location": {"id": 32000006, "name": "International"},
+  "warLeague": {"id": 48000010, "name": "Champion League I"},
+  "clanLevel": 19,
+  "clanPoints": 51230,
+  "clanBuilderBasePoints": 38400,
+  "requiredTrophies": 4200,
+  "warWins": 342,
+  "warTies": 12,
+  "warLosses": 88,
+  "members": 3,
+  "isWarLogPublic": true,
+  "memberList": [
+    {"tag": "#2PP", "name": "Test Chief", "role": "coLeader", "expLevel": 214,
+     "trophies": 5120, "donations": 8420, "donationsReceived": 4210, "clanRank": 2},
+    {"tag": "#8YQ", "name": "Second", "role": "leader", "expLevel": 230,
+     "trophies": 5310, "donations": 6100, "donationsReceived": 5200, "clanRank": 1},
+    {"tag": "#9PP", "name": "Third", "role": "member", "expLevel": 180,
+     "trophies": 4400, "donations": 1200, "donationsReceived": 2600, "clanRank": 3}
+  ]
+}
