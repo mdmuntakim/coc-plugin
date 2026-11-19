@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import plugin.clashofclans.data.Store;
+
 /** Layout glue shared by the five screens. */
 public final class Screens {
 
@@ -51,5 +53,12 @@ public final class Screens {
 
     public static TextView sectionLabel(Context c, String text) {
         return Widgets.label(c, text);
+    }
+
+    /** LIVE when the last refresh worked, CACHED when the copy is older. */
+    public static TextView liveBadge(Context c, Store st) {
+        boolean fresh = st.lastError().isEmpty();
+        return Widgets.badge(c, fresh ? "LIVE" : "CACHED",
+                fresh ? Palette.GREEN : Palette.accent);
     }
 }

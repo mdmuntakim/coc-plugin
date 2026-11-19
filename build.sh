@@ -4,18 +4,21 @@
 # ----------------------------------------------------------------------------
 # The APK is produced with the Android SDK build tools directly: aapt2 compiles
 # the resources, javac compiles the Java sources, d8 makes the dex, zipalign
-# aligns and apksigner signs. No AndroidX, no network, no Gradle daemon.
+# aligns and apksigner signs. No AndroidX, no Gradle daemon.
 #
-#   bash build.sh              # -> dist/COCPlugin-1.0.0.apk
-#   VERSION=1.0.1 VERSION_CODE=2 bash build.sh
+# The APK talks to the official Clash of Clans API at runtime; the build
+# itself needs no network.
+#
+#   bash build.sh              # -> dist/COCPlugin-2.0.0.apk
+#   VERSION=2.0.1 VERSION_CODE=3 bash build.sh
 # ============================================================================
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-1.0.0}"
-VERSION_CODE="${VERSION_CODE:-1}"
+VERSION="${VERSION:-2.0.0}"
+VERSION_CODE="${VERSION_CODE:-2}"
 MIN_SDK="${MIN_SDK:-26}"
 TARGET_SDK="${TARGET_SDK:-34}"
 

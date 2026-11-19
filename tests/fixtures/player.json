@@ -1,0 +1,57 @@
+{
+  "tag": "#2PP",
+  "name": "Test Chief",
+  "townHallLevel": 16,
+  "townHallWeaponLevel": 5,
+  "expLevel": 214,
+  "trophies": 5120,
+  "bestTrophies": 5340,
+  "warStars": 1210,
+  "attackWins": 1480,
+  "attackLosses": 910,
+  "defenseWins": 320,
+  "defenseLosses": 410,
+  "builderHallLevel": 10,
+  "builderBaseTrophies": 3110,
+  "bestBuilderBaseTrophies": 3290,
+  "donations": 8420,
+  "donationsReceived": 4210,
+  "clanCapitalContributions": 240000,
+  "role": "coLeader",
+  "clan": {
+    "tag": "#2YQ8L0PR",
+    "name": "Iron Vanguard",
+    "clanLevel": 19,
+    "badgeUrls": {
+      "small": "https://api-assets.clashofclans.com/badges/70/x.png"
+    }
+  },
+  "league": {
+    "id": 29000022,
+    "name": "Legend League",
+    "iconUrls": {
+      "small": "https://api-assets.clashofclans.com/leagues/72/L.png"
+    }
+  },
+  "builderBaseLeague": {
+    "id": 44000007,
+    "name": "Diamond League"
+  },
+  "troops": [
+    {"name": "Barbarian", "level": 12, "maxLevel": 13, "village": "home"},
+    {"name": "Archer", "level": 13, "maxLevel": 13, "village": "home"},
+    {"name": "Root Rider", "level": 3, "maxLevel": 5, "village": "home"},
+    {"name": "Sneaky Archer", "level": 18, "maxLevel": 20, "village": "builderBase"}
+  ],
+  "heroes": [
+    {"name": "Barbarian King", "level": 90, "maxLevel": 95, "village": "home"},
+    {"name": "Archer Queen", "level": 92, "maxLevel": 95, "village": "home"}
+  ],
+  "spells": [
+    {"name": "Lightning Spell", "level": 11, "maxLevel": 12, "village": "home"},
+    {"name": "Rage Spell", "level": 6, "maxLevel": 6, "village": "home"}
+  ],
+  "pets": [
+    {"name": "L.A.S.S.I", "level": 9, "maxLevel": 10, "village": "home"}
+  ]
+}

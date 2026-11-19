@@ -11,9 +11,11 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 import plugin.clashofclans.data.Store;
+import plugin.clashofclans.data.Sync;
 import plugin.clashofclans.ui.AccountPanel;
 import plugin.clashofclans.ui.ArmyPanel;
 import plugin.clashofclans.ui.Chrome;
+import plugin.clashofclans.ui.ConnectDialog;
 import plugin.clashofclans.ui.Dialogs;
 import plugin.clashofclans.ui.Palette;
 import plugin.clashofclans.ui.Skin;
@@ -24,11 +26,13 @@ import plugin.clashofclans.ui.Widgets;
 
 /**
  * Single-activity shell: themed top bar, one scrollable screen and the five
- * bottom tabs. Everything it shows comes from the local {@link Store}.
+ * bottom tabs. The account screens show what the official API answered; the
+ * village tab keeps the local planner.
  */
 public final class MainActivity extends Activity {
 
     private static final String STATE_TAB = "tab";
+    private static final long AUTO_SYNC_AFTER_MS = 120_000L;
 
     private Store store;
     private Chrome.Header header;
@@ -52,7 +56,7 @@ public final class MainActivity extends Activity {
         LinearLayout shell = Widgets.column(this);
         shell.setBackground(Skin.backdrop(this));
 
-        header = Chrome.topBar(this, store, this::openSettings);
+        header = Chrome.topBar(this, store, this::openSettings, this::sync, this::openConnect);
         shell.addView(header.view);
         View hairline = new View(this);
         hairline.setBackgroundColor(0x33FFFFFF);
@@ -73,6 +77,37 @@ public final class MainActivity extends Activity {
 
     private void openSettings() {
         Dialogs.settings(this, store, () -> show(tab));
+    }
+
+    private void openConnect() {
+        ConnectDialog.show(this, store, () -> {
+            show(tab);
+            if (store.configured() && !Sync.busy()) sync();
+        });
+    }
+
+    /** Fetch the real account from the API and redraw. */
+    private void sync() {
+        if (Sync.busy()) {
+            Chrome.toast(this, "A sync is already running");
+            return;
+        }
+        if (!store.configured()) {
+            openConnect();
+            return;
+        }
+        Chrome.toast(this, "Contacting " + store.host() + "…");
+        Sync.refresh(store, (live, error) -> {
+            if (error != null) {
+                Chrome.toast(this, error);
+            } else if (live.player != null) {
+                Chrome.toast(this, "Live: " + live.player.name + "  ·  "
+                        + live.player.trophies + " trophies");
+            } else {
+                Chrome.toast(this, "Synced");
+            }
+            show(tab);
+        });
     }
 
     private void show(int index) {
@@ -109,6 +144,10 @@ public final class MainActivity extends Activity {
         super.onResume();
         store.settle();
         show(tab);
+        long age = System.currentTimeMillis() - store.lastSync();
+        if (store.configured() && !Sync.busy() && age > AUTO_SYNC_AFTER_MS) {
+            sync();
+        }
     }
 
     @Override

@@ -24,6 +24,7 @@ public final class Palette {
     public static final int GEM = 0xFF57D68A;
     public static final int BLUE = 0xFF63B8E8;
     public static final int PARCHMENT = 0xFFF0DFBC;
+    public static final int GOLD = 0xFFF3C65A;
 
     /** The active accent, changed by the settings screen. */
     public static int accent = 0xFFF3C65A;

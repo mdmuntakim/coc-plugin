@@ -231,7 +231,11 @@ public final class Widgets {
         }
 
         public void add(View v) {
-            body.addView(v, wide());
+            // Keep a view's own fixed size (a divider is one pixel high). A
+            // bare View measured with WRAP_CONTENT would otherwise swallow the
+            // whole remaining height.
+            ViewGroup.LayoutParams own = v.getLayoutParams();
+            body.addView(v, own == null ? wide() : own);
         }
 
         public void addGap() {

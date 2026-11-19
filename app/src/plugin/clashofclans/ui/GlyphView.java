@@ -32,6 +32,8 @@ public final class GlyphView extends View {
     public static final int CHECK = 12;
     public static final int BOLT = 13;
     public static final int GOLD = 14;
+    public static final int SYNC = 15;
+    public static final int SIGNAL = 16;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
@@ -96,6 +98,8 @@ public final class GlyphView extends View {
             case CHECK: check(canvas); break;
             case BOLT: bolt(canvas); break;
             case GOLD: coin(canvas); break;
+            case SYNC: sync(canvas); break;
+            case SIGNAL: signal(canvas); break;
             default: crest(canvas); break;
         }
         canvas.restore();
@@ -336,6 +340,55 @@ public final class GlyphView extends View {
         canvas.drawPath(path, paint);
         paint.setColor(0xFF202730);
         canvas.drawCircle(17.2f, 6.8f, 2.1f, paint);
+    }
+
+    /** Two chasing arcs with arrow heads: "fetch from the server". */
+    private void sync(Canvas canvas) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(2f);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setColor(color);
+        rect.set(4.2f, 4.2f, 19.8f, 19.8f);
+        path.reset();
+        path.addArc(rect, 200f, 130f);
+        canvas.drawPath(path, paint);
+        path.reset();
+        path.addArc(rect, 20f, 130f);
+        canvas.drawPath(path, paint);
+
+        paint.setStyle(Paint.Style.FILL);
+        path.reset();
+        path.moveTo(17.4f, 1.4f);
+        path.lineTo(21.4f, 5.4f);
+        path.lineTo(16.6f, 6.6f);
+        path.close();
+        canvas.drawPath(path, paint);
+        path.reset();
+        path.moveTo(6.6f, 22.6f);
+        path.lineTo(2.6f, 18.6f);
+        path.lineTo(7.4f, 17.4f);
+        path.close();
+        canvas.drawPath(path, paint);
+        paint.setStrokeCap(Paint.Cap.BUTT);
+    }
+
+    /** Broadcast arcs: a live connection to the server. */
+    private void signal(Canvas canvas) {
+        paint.setColor(color);
+        canvas.drawCircle(12f, 18.4f, 2.2f, paint);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(2f);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        rect.set(7.2f, 11.4f, 16.8f, 21f);
+        path.reset();
+        path.addArc(rect, 205f, 130f);
+        canvas.drawPath(path, paint);
+        rect.set(3.6f, 7.2f, 20.4f, 24f);
+        path.reset();
+        path.addArc(rect, 209f, 122f);
+        canvas.drawPath(path, paint);
+        paint.setStrokeCap(Paint.Cap.BUTT);
+        paint.setStyle(Paint.Style.FILL);
     }
 
     private void check(Canvas canvas) {

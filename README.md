@@ -1,46 +1,64 @@
 # COCPlugin
 
-**An unofficial, offline Clash of Clans themed companion for Android.**
+**An unofficial Clash of Clans companion that reads your real account from the
+official Supercell API.**
 Package `plugin.clashofclans`, app name *COCPlugin*.
 
-COCPlugin is a planner and dashboard for the numbers a chief checks every day:
-account status, league progress, the builder queue, laboratory research, the
-current clan war and a small loot calculator. It is drawn from scratch in a
-warm gold-on-stone style that matches the look of the game world.
+Enter a player tag and a developer token once: the Account, Army and War tabs
+then show the account, clan, current war and unit levels that
+`api.clashofclans.com` actually returns. The last reply is cached, so the app
+still opens offline, labelled with its age. The Village tab is a local
+building planner, because no official endpoint publishes building levels.
 
-It is **not** a mod, a private server client or a bot. It has no network
-permission, cannot read the game, and ships no artwork, font or sprite of the
-game. All icons and backgrounds are original vector and canvas drawings.
+It is **not** a mod, a private server client or a bot. It cannot log in, cannot
+change an account and cannot attack. It ships no artwork, font or sprite of the
+game: every icon and background is an original vector or canvas drawing.
 
 > Clash of Clans is a trademark of Supercell. This project is not affiliated
 > with, endorsed by or connected to Supercell.
 
 ## Screens
 
-| Tab | What it does |
-| --- | --- |
-| **Account** | Player name and tag, Town Hall and experience level, XP bar, trophy league with the next bracket, career stats, donation ratio, war win rate, clan card. The profile is editable and stored locally. |
-| **Village** | Sixteen buildings with their level, next-level cost and build time. Five builder slots, a live countdown and progress bar per upgrade, a builder queue, and gold / total build time to max. |
-| **Army** | The laboratory queue and twenty-two troops. Research costs and times, a live lab countdown, and a progress meter of the whole research ladder. |
-| **War** | Current war state, opponent, live countdown, stars for both sides, attacks used and left, a star recorder, and a war log with W/L/D and win rate. |
-| **Tools** | Season reset clock (first of the month, 05:00 UTC), a loot calculator that can bank the result into the local resources, and the upgrade planner totals. |
+| Tab | Source | What it shows |
+| --- | --- | --- |
+| **Account** | live | Name, tag, role, Town Hall and experience level, trophies and league, career stats, donation ratio, clan card and the top ten members. |
+| **Village** | local planner | Building levels you enter, next-level cost and time, five builder slots, countdowns and totals to max. Clearly marked as a planner. |
+| **Army** | live | Every troop, hero, spell and pet with its real level and max level, home village and Builder Base. |
+| **War** | live | War state, opponent, countdown to the battle day or the end, stars and destruction for both sides, attacks used and left, and the public war log. |
+| **Tools** | local | Season reset clock (first of the month, 05:00 UTC), loot calculator and the planner totals. |
 
-Plus a settings sheet with three crown accents (Royal Gold, Dark Elixir, Ice
-Crown), a profile reset, and the version / disclaimer.
+The top bar is the connection itself: it shows `LIVE · api.clashofclans.com`
+with the player name and trophies, or `NOT CONNECTED` and a tap target. The
+round arrows button forces a sync; the app also syncs on launch when the cache
+is older than two minutes.
 
-Upgrade and research timers are persisted as absolute end times, so they keep
-running while the app is closed and settle the next time the app opens.
+## Connecting
+
+1. Create an API key at <https://developer.clashofclans.com> (My Account →
+   Create New API Key). Copy it.
+2. Open the app → tap the status strip → paste the player tag, the token and,
+   if you use one, the proxy base URL.
+3. **Test** asks the server for the player and prints the real name; **Save and
+   sync** stores it and fetches the clan, war and war log.
+
+The token is bound to an IP address. On mobile data that address changes, and
+the API answers `403 accessDenied`; `proxy/` contains a Cloudflare Worker and a
+small Node server that keep the token server-side. The app accepts any base URL
+that answers the same JSON, so a proxy is a one-field change.
+
+Details, endpoints and troubleshooting: [`docs/LIVE.md`](docs/LIVE.md).
 
 ## Design
 
-The whole UI is built from the Android framework: no AndroidX, no Material
-library, no third-party runtime dependency. That keeps the APK at roughly
-60 KB and makes the build reproducible without network access.
+The UI is built from the Android framework: no AndroidX, no Material library,
+no third-party runtime dependency. The only permissions are `INTERNET` and
+`ACCESS_NETWORK_STATE`.
 
 | Layer | Path |
 | --- | --- |
-| Model and maths (pure Java, unit-tested on the JVM) | `app/src/plugin/clashofclans/model` |
-| Local profile and timer store (`SharedPreferences`) | `app/src/plugin/clashofclans/data/Store.java` |
+| API models and JSON parser (pure Java, unit-tested) | `app/src/plugin/clashofclans/model` |
+| HTTP client and error mapping (pure Java) | `app/src/plugin/clashofclans/net` |
+| Connection settings, cache and sync | `app/src/plugin/clashofclans/data` |
 | Theme, drawables, canvas icons, widgets | `app/src/plugin/clashofclans/ui` |
 | Themed screens | `AccountPanel`, `VillagePanel`, `ArmyPanel`, `WarPanel`, `ToolsPanel` |
 | Single activity shell and the five tabs | `MainActivity.java` |
@@ -53,20 +71,20 @@ shield-and-crown vector.
 ## Build
 
 Requirements: JDK 17 (or newer), Android SDK with build-tools and a platform
-(`android-34` or newer). No Gradle, no network.
+(`android-34` or newer). No Gradle, and the build itself needs no network.
 
 ```bash
 export ANDROID_HOME=/path/to/android-sdk
 bash build.sh
 ```
 
-The script runs the unit tests, compiles the resources with `aapt2`, compiles
-the Java sources, dexes with `d8`, aligns with `zipalign`, signs with
-`apksigner`, verifies the package name, and writes:
+The script runs both unit suites, compiles resources with `aapt2`, compiles the
+Java sources, dexes with `d8`, aligns with `zipalign`, signs with `apksigner`,
+verifies the package name and writes:
 
 ```
-dist/COCPlugin-1.0.0.apk
-dist/COCPlugin-1.0.0.sha256
+dist/COCPlugin-2.0.0.apk
+dist/COCPlugin-2.0.0.sha256
 ```
 
 Override the version with `VERSION` and `VERSION_CODE`.
@@ -79,23 +97,30 @@ install over each other. Override it with `COC_KEYSTORE`,
 Install on a device or emulator:
 
 ```bash
-adb install -r dist/COCPlugin-1.0.0.apk
+adb install -r dist/COCPlugin-2.0.0.apk
 adb shell am start -n plugin.clashofclans/.MainActivity
 ```
 
 ## Tests
 
 ```bash
-bash tests/run.sh
+bash tests/run.sh     # 502 model checks + 32 HTTP client checks
+bash tests/live.sh    # real HTTPS round trip, token optional
 ```
 
-runs 429 assertions over the pure model: tag normalisation, the XP curve,
-duration and number formatting, upgrade cost growth, catalogue integrity,
-league thresholds and progress, loot and raid maths, war result rules and the
-season clock.
+- `LogicTest` covers tag normalisation, the XP curve, formatting, upgrade
+  costs, league thresholds, loot and war maths, the season clock, the JSON
+  parser and the player / clan / war / war-log parsers against recorded
+  fixtures.
+- `ApiTest` starts a local `HttpServer` and drives the real `CocApi`: URL
+  encoding of `#`, the bearer header, gzip replies, 401/403/404/429 mapping,
+  the proxy mode without a token and a refused connection.
+- `tests/live.sh` calls `api.clashofclans.com` for real. With no token the API
+  answers `403 accessDenied`, which still proves DNS, TLS and the client work;
+  with `COC_API_TOKEN` and `COC_PLAYER_TAG` it prints the live account.
 
-`docs/ACCEPTANCE.md` records the device/API matrix and the smoke run that goes
-with a release.
+`docs/ACCEPTANCE.md` records the build and runtime matrix that goes with a
+release.
 
 ## Screens
 
@@ -103,16 +128,18 @@ with a release.
 | --- | --- | --- | --- | --- |
 | ![Account](docs/screenshots/account.png) | ![Village](docs/screenshots/village.png) | ![Army](docs/screenshots/army.png) | ![War](docs/screenshots/war.png) | ![Tools](docs/screenshots/tools.png) |
 
-Recorded on Android 14 (API 34). See `docs/ACCEPTANCE.md` for the matrix.
+The screenshots above are from 1.0.0 and still show the offline profile. The
+2.0.0 rebuild loads the real account; the visual language is unchanged.
 
 ## Layout of the repository
 
 ```
 app/                 manifest, Java sources, resources
-tests/               plain-JVM regression suite
+tests/               plain-JVM regression suites and API fixtures
+proxy/               optional token proxy (Cloudflare Worker, Node server)
 keystore/            the self-signed release key
-docs/                acceptance record and screenshots
-.github/workflows/   CI: build, test and verify on every push
+docs/                live-connection notes, acceptance record and screenshots
+.github/workflows/   CI: build, test, API reachability probe, signature check
 build.sh             the whole build in one script
 ```
 

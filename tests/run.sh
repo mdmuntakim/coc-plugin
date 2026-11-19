@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Runs the pure-JVM regression suite (no emulator, no Android SDK needed).
+# Runs the pure-JVM regression suites (no emulator, no Android SDK needed).
+#
+#   LogicTest  - planner maths and the JSON/API parsers, against fixtures
+#   ApiTest    - the real HTTP client against a local server: headers, gzip,
+#                401/403/404/429 mapping, url encoding, timeouts
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -11,6 +15,12 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 "$JAVAC" -encoding UTF-8 --release 11 -d "$OUT" \
   "$ROOT"/app/src/plugin/clashofclans/model/*.java \
-  "$ROOT"/tests/src/plugin/clashofclans/model/LogicTest.java
+  "$ROOT"/app/src/plugin/clashofclans/net/*.java \
+  "$ROOT"/tests/src/plugin/clashofclans/model/LogicTest.java \
+  "$ROOT"/tests/src/plugin/clashofclans/net/ApiTest.java \
+  "$ROOT"/tests/src/plugin/clashofclans/net/LiveProbe.java
 
-"$JAVA" -cp "$OUT" plugin.clashofclans.model.LogicTest
+"$JAVA" -Dfixtures="$ROOT/tests/fixtures" -cp "$OUT" \
+  plugin.clashofclans.model.LogicTest
+"$JAVA" -Dfixtures="$ROOT/tests/fixtures" -cp "$OUT" \
+  plugin.clashofclans.net.ApiTest

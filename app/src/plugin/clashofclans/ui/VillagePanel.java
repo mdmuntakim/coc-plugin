@@ -28,6 +28,7 @@ public final class VillagePanel {
         LinearLayout root = Widgets.column(a);
         List<Row> rows = new ArrayList<>();
 
+        Screens.add(root, aboutCard(a, st, refresh));
         Screens.add(root, builderCard(a, st));
         Screens.add(root, upgradeCard(a, st, refresh, rows));
         Screens.add(root, summaryCard(a, st));
@@ -46,6 +47,49 @@ public final class VillagePanel {
             }
         });
         return root;
+    }
+
+    private static View aboutCard(Activity a, Store st, Runnable refresh) {
+        Widgets.Card card = new Widgets.Card(a, "Village planner", GlyphView.VILLAGE);
+        card.action(Widgets.badge(a, "PLANNER", Palette.accentDark));
+
+        LinearLayout row = Widgets.row(a);
+        row.addView(Widgets.text(a, "Town Hall " + (st.townHall() > 0
+                        ? String.valueOf(st.townHall()) : "not set"),
+                15f, Palette.TEXT, true), Widgets.weight(1f));
+        card.add(row);
+
+        TextView note = Widgets.body(a,
+                "Supercell's API publishes player, clan, war and unit data, but no building "
+                        + "levels. This tab is therefore your own record: tap a level badge to "
+                        + "correct it, then start an upgrade to let the timer run. Nothing here is "
+                        + "presented as server data.");
+        note.setTextSize(11f);
+        note.setTextColor(Palette.TEXT_DIM);
+        card.addGap();
+        card.add(note);
+        card.addGap();
+
+        LinearLayout actions = Widgets.row(a);
+        LinearLayout.LayoutParams ap = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        ap.rightMargin = Skin.dp(a, 4);
+        TextView th = Widgets.pillButton(a, "Set Town Hall", false,
+                () -> Dialogs.setTownHall(a, st, refresh));
+        th.setLayoutParams(ap);
+        actions.addView(th);
+        LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        rp.leftMargin = Skin.dp(a, 4);
+        TextView reset = Widgets.pillButton(a, "Clear levels", false, () -> {
+            st.resetPlanner();
+            Chrome.toast(a, "Planner levels cleared");
+            refresh.run();
+        });
+        reset.setLayoutParams(rp);
+        actions.addView(reset);
+        card.add(actions);
+        return card;
     }
 
     private static View builderCard(Activity a, Store st) {
@@ -164,6 +208,7 @@ public final class VillagePanel {
             TextView name = Widgets.text(a, b.name, 14.5f, Palette.TEXT, true);
             head.addView(name, Widgets.weight(1f));
             level = Widgets.badge(a, "LV 1", Palette.accent);
+            level.setOnClickListener(v -> Dialogs.setBuildingLevel(a, st, b, refresh));
             head.addView(level);
             view.addView(head);
 

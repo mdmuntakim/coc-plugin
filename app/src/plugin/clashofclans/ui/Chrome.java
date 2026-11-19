@@ -19,36 +19,85 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import plugin.clashofclans.data.Live;
 import plugin.clashofclans.data.Store;
+import plugin.clashofclans.model.Fmt;
 
-/** Shared screen furniture: the top bar, the resource strip and the bottom tabs. */
+/** Shared screen furniture: the top bar, the live account strip and the tabs. */
 public final class Chrome {
 
     public interface NavListener {
         void onSelect(int index);
     }
 
-    /** The static top bar plus the resource values that change at runtime. */
+    /** The static top bar plus the live status line that changes at runtime. */
     public static final class Header {
         public final LinearLayout view;
-        private final TextView[] values;
+        private final TextView subtitle;
+        private final TextView name;
+        private final TextView detail;
+        private final TextView age;
+        private final GlyphView signal;
 
-        Header(LinearLayout view, TextView[] values) {
+        Header(LinearLayout view, TextView subtitle, TextView name, TextView detail,
+               TextView age, GlyphView signal) {
             this.view = view;
-            this.values = values;
+            this.subtitle = subtitle;
+            this.name = name;
+            this.detail = detail;
+            this.age = age;
+            this.signal = signal;
         }
 
         public void refresh(Store st) {
-            long[] now = {st.gold(), st.elixir(), st.dark(), st.gems()};
-            for (int i = 0; i < values.length && i < now.length; i++) {
-                values[i].setText(plugin.clashofclans.model.Fmt.shortNumber(now[i]));
+            Live live = st.live();
+            boolean connected = live.hasPlayer();
+            int color = connected ? Palette.GREEN : (st.configured() ? Palette.accent : Palette.TEXT_DIM);
+            signal.color(color);
+
+            if (connected) {
+                boolean stale = !st.lastError().isEmpty();
+                subtitle.setText((stale ? "OFFLINE COPY  ·  " : "LIVE  ·  ")
+                        + (live.host.isEmpty() ? st.host() : live.host));
+                subtitle.setTextColor(stale ? Palette.RED : Palette.GREEN);
+                name.setText(live.player.name);
+                String line = live.player.tag;
+                if (live.player.townHallLevel > 0) line += "  ·  TH " + live.player.townHallLevel;
+                line += "  ·  " + Fmt.number(live.player.trophies) + " trophies";
+                if (!live.player.leagueName.isEmpty()) line += "  ·  " + live.player.leagueName;
+                detail.setText(line);
+                age.setText(ago(System.currentTimeMillis() - live.fetchedAt));
+                age.setVisibility(View.VISIBLE);
+            } else if (st.configured()) {
+                boolean failed = live.error != null;
+                subtitle.setText((failed ? "NOT SYNCED  ·  " : "READY  ·  ") + st.host());
+                subtitle.setTextColor(failed ? Palette.RED : Palette.accent);
+                name.setText("Tap to sync " + st.tag());
+                detail.setText(live.error == null
+                        ? "Connected settings stored. No reply yet."
+                        : live.error);
+                age.setText("");
+                age.setVisibility(View.GONE);
+            } else {
+                subtitle.setText("NOT CONNECTED");
+                subtitle.setTextColor(Palette.TEXT_DIM);
+                name.setText("Tap to connect your account");
+                detail.setText("Official Clash of Clans API  ·  player tag + token");
+                age.setText("");
+                age.setVisibility(View.GONE);
             }
+        }
+
+        private static String ago(long millis) {
+            if (millis < 5_000) return "now";
+            return Fmt.duration(millis) + " ago";
         }
     }
 
     private Chrome() {}
 
-    public static Header topBar(Activity a, Store st, Runnable onSettings) {
+    public static Header topBar(Activity a, Store st, Runnable onSettings,
+                                Runnable onSync, Runnable onConnect) {
         LinearLayout bar = Widgets.column(a);
         bar.setBackground(Skin.vertical(0xFF1B232D, 0xFF11161D, a, 0f));
         bar.setPadding(0, Skin.dp(a, 10), 0, Skin.dp(a, 10));
@@ -70,65 +119,68 @@ public final class Chrome {
         title.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
         title.setShadowLayer(Skin.dp(a, 4), 0, Skin.dp(a, 1), 0xCC000000);
         titles.addView(title);
-        TextView sub = Widgets.text(a, "UNOFFICIAL COMPANION  ·  OFFLINE", 9.5f,
-                Palette.TEXT_DIM, true);
+        TextView sub = Widgets.text(a, "NOT CONNECTED", 9.5f, Palette.TEXT_DIM, true);
         sub.setLetterSpacing(0.13f);
         titles.addView(sub);
         top.addView(titles);
 
         top.addView(Widgets.hSpacer(a));
 
+        GlyphView sync = Widgets.glyph(a, GlyphView.SYNC, Palette.accent, 22);
+        sync.setPadding(Skin.dp(a, 8), Skin.dp(a, 8), Skin.dp(a, 8), Skin.dp(a, 8));
+        sync.setBackground(Skin.round(0x22FFD98A, a, 20f));
+        sync.setOnClickListener(v -> onSync.run());
+        top.addView(sync);
+
         GlyphView gear = Widgets.glyph(a, GlyphView.GEAR, Palette.TEXT_DIM, 22);
         gear.setPadding(Skin.dp(a, 8), Skin.dp(a, 8), Skin.dp(a, 8), Skin.dp(a, 8));
         gear.setBackground(Skin.round(0x22FFFFFF, a, 20f));
+        LinearLayout.LayoutParams gp = Widgets.lp(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        gp.leftMargin = Skin.dp(a, 8);
+        gear.setLayoutParams(gp);
         gear.setOnClickListener(v -> onSettings.run());
         top.addView(gear);
         bar.addView(top);
 
         bar.addView(gap(a, 9));
-        TextView[] values = new TextView[4];
+
         LinearLayout strip = Widgets.row(a);
-        strip.setPadding(Skin.dp(a, 14), 0, Skin.dp(a, 14), 0);
-        strip.setWeightSum(4f);
-        strip.addView(resource(a, GlyphView.GOLD, Palette.accent, st.gold(), values, 0), weight());
-        strip.addView(gapView(a, 6));
-        strip.addView(resource(a, GlyphView.ELIXIR, Palette.ELIXIR, st.elixir(), values, 1), weight());
-        strip.addView(gapView(a, 6));
-        strip.addView(resource(a, GlyphView.ELIXIR, Palette.DARK_ELIXIR, st.dark(), values, 2), weight());
-        strip.addView(gapView(a, 6));
-        strip.addView(resource(a, GlyphView.GEM, Palette.GEM, st.gems(), values, 3), weight());
+        strip.setBackground(Skin.inset(a));
+        strip.setPadding(Skin.dp(a, 10), Skin.dp(a, 8), Skin.dp(a, 10), Skin.dp(a, 8));
+        LinearLayout.LayoutParams sp = Widgets.wide();
+        sp.leftMargin = Skin.dp(a, 14);
+        sp.rightMargin = Skin.dp(a, 14);
+        strip.setLayoutParams(sp);
+
+        GlyphView signal = Widgets.glyph(a, GlyphView.SIGNAL, Palette.TEXT_DIM, 20);
+        strip.addView(signal);
+
+        LinearLayout texts = Widgets.column(a);
+        LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        tlp.leftMargin = Skin.dp(a, 9);
+        texts.setLayoutParams(tlp);
+
+        TextView name = Widgets.text(a, "", 13.5f, Palette.TEXT, true);
+        name.setSingleLine(true);
+        texts.addView(name);
+        TextView detail = Widgets.text(a, "", 10f, Palette.TEXT_DIM, false);
+        detail.setSingleLine(true);
+        detail.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        texts.addView(detail);
+        strip.addView(texts);
+
+        TextView age = Widgets.text(a, "", 9.5f, Palette.TEXT_DIM, true);
+        age.setGravity(Gravity.END);
+        strip.addView(age);
+
+        strip.setOnClickListener(v -> onConnect.run());
         bar.addView(strip);
-        return new Header(bar, values);
-    }
 
-    private static LinearLayout.LayoutParams weight() {
-        return new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-    }
-
-    private static View resource(Activity a, int glyph, int color, long value,
-                                 TextView[] values, int slot) {
-        LinearLayout box = Widgets.row(a);
-        box.setBackground(Skin.chip(a, color));
-        box.setPadding(Skin.dp(a, 7), Skin.dp(a, 6), Skin.dp(a, 8), Skin.dp(a, 6));
-        GlyphView g = Widgets.glyph(a, glyph, color, 14);
-        box.addView(g);
-        TextView t = Widgets.text(a, plugin.clashofclans.model.Fmt.shortNumber(value),
-                11.5f, Palette.TEXT, true);
-        LinearLayout.LayoutParams p = Widgets.weight(1f);
-        p.leftMargin = Skin.dp(a, 5);
-        t.setLayoutParams(p);
-        t.setSingleLine(true);
-        box.addView(t);
-        values[slot] = t;
-        box.setLayoutParams(new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        return box;
-    }
-
-    private static View gapView(Activity a, int width) {
-        View v = new View(a);
-        v.setLayoutParams(Widgets.lp(Skin.dp(a, width), 1));
-        return v;
+        Header header = new Header(bar, sub, name, detail, age, signal);
+        header.refresh(st);
+        return header;
     }
 
     private static View gap(Context c, int height) {
@@ -163,20 +215,20 @@ public final class Chrome {
 
             GlyphView glyph = new GlyphView(a).kind(icons[i])
                     .color(index == selected ? Palette.accent : Palette.TEXT_DIM);
-            LinearLayout.LayoutParams gp = Widgets.lp(Skin.dp(a, 22), Skin.dp(a, 22));
-            gp.topMargin = Skin.dp(a, 5);
-            gp.gravity = Gravity.CENTER_HORIZONTAL;
-            glyph.setLayoutParams(gp);
+            LinearLayout.LayoutParams gpp = Widgets.lp(Skin.dp(a, 22), Skin.dp(a, 22));
+            gpp.topMargin = Skin.dp(a, 5);
+            gpp.gravity = Gravity.CENTER_HORIZONTAL;
+            glyph.setLayoutParams(gpp);
             item.addView(glyph);
 
             TextView t = Widgets.text(a, labels[i], 9.5f,
                     index == selected ? Palette.accent : Palette.TEXT_DIM, true);
             t.setLetterSpacing(0.06f);
             t.setGravity(Gravity.CENTER);
-            LinearLayout.LayoutParams tp = Widgets.lp(ViewGroup.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams tlp = Widgets.lp(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
-            tp.topMargin = Skin.dp(a, 3);
-            t.setLayoutParams(tp);
+            tlp.topMargin = Skin.dp(a, 3);
+            t.setLayoutParams(tlp);
             item.addView(t);
 
             if (index == selected) {
