@@ -1,0 +1,19 @@
+# build output
+build/
+dist/
+*.apk
+*.aab
+*.aar
+
+# tooling
+.gradle/
+local.properties
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# os noise
+.DS_Store
+Thumbs.db
