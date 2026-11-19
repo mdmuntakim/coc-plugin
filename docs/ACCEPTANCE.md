@@ -15,8 +15,9 @@ the ones that were actually run.
 | Package | `plugin.clashofclans` (checked with `aapt2 dump packagename`) |
 | SDK levels | min 26, target 34 |
 | Signer | `CN=COCPlugin`, v3 signature, verified with `apksigner verify` |
-| SHA-256 | `e6fb36afba3d35aac28729b5ba33b6350ad8a667d28891cb45158e02b9acc7ff` |
+| SHA-256 | local build `e6fb36af…acc7ff`; published 1.0.0 asset `4fcc807b…d4a9f` |
 | Native code | none: the APK contains only `classes.dex` and resources |
+| Release | https://github.com/mdmuntakim/coc-plugin/releases/tag/coc-plugin-1.0.0 |
 
 Because there is no native library, the APK is ABI independent. The runtime
 matrix below was executed on an x86_64 emulator; the same dex runs on
@@ -52,6 +53,17 @@ hardware KVM, fresh install (`adb install`).
 
 `docs/screenshots/account.png`, `village.png`, `army.png`, `war.png`,
 `tools.png` are the frames captured on the emulator above.
+
+## Release asset
+
+The published 1.0.0 APK was downloaded again from the release, installed on a
+clean emulator, launched to the Account screen and checked for FATAL entries in
+`logcat`; it is the same build as the matrix above. Its SHA-256 is
+`4fcc807b188432535815522e730192c680d944599428976c6c1e96b25f6d4a9f`.
+
+A rebuild is not byte-for-byte reproducible: zip entry timestamps and the
+signing block change, so a fresh `bash build.sh` produces a different hash with
+the same package name and signing certificate.
 
 ## Notes
 
